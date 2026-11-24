@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.ingest.chunk import split_section
 from src.ingest.explore import describe
 
 FICHES = Path("data/processed/fiches.parquet")
@@ -17,26 +18,8 @@ WINDOW, STRIDE = 200, 150
 
 
 def pack_lines(text: str, max_words: int) -> list[int]:
-    """Greedy packing of whole lines up to `max_words`; return the word count of each piece.
-
-    A single line longer than `max_words` is cut into `max_words` slices.
-    """
-    pieces, current = [], 0
-    for line in text.split("\n"):
-        n = len(line.split())
-        while n > max_words:
-            if current:
-                pieces.append(current)
-                current = 0
-            pieces.append(max_words)
-            n -= max_words
-        if current + n > max_words:
-            pieces.append(current)
-            current = 0
-        current += n
-    if current:
-        pieces.append(current)
-    return pieces
+    """Word count of each piece produced by the section splitter."""
+    return [len(piece.split()) for piece in split_section(text, max_words)]
 
 
 def sliding_windows(n_words: int, window: int = WINDOW, stride: int = STRIDE) -> list[int]:
