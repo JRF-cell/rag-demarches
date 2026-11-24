@@ -4,8 +4,9 @@ A <Condition> holds no text: it references questionnaire variables (`<estVrai va
 whose labels live in the <Questionnaire> of some sheets. The parser skips both, so the text of
 a conditioned element is kept but loses the condition under which it applies. This script
 counts conditioned elements per parent tag, whether their variables can be resolved to a label,
-whether their text reaches the chunks, and how many chunks hold text of an untitled
-conditioned element (where the condition is the only context of the text).
+whether their text reaches the chunks, and which chunks hold text of an untitled
+conditioned element (where the condition is the only context of the text). Those chunks stay
+in the index but are never used as the source of an evaluation question.
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from src.ingest.parse_xml import clean, inline_text, render_children
 FICHES = Path("data/processed/fiches.parquet")
 CHUNKS = Path("data/processed/chunks.parquet")
 OUTPUT = Path("results/condition_stats.json")
+EXCLUDED = Path("eval/excluded_source_chunks.json")
 # Parents whose title already states the case (rendered as a "<title> :" line or a path).
 TITLED = {"Cas", "Situation", "Chapitre", "SousChapitre"}
 MIN_LINE_WORDS = 5
@@ -65,15 +67,20 @@ def never_negated_vars(xml_dir: Path) -> set[str]:
     return {v for v, tags in tested.items() if tags == {"estVrai"} and v not in assigned}
 
 
-def condition_stats(xml_dir: Path, fiches: pd.DataFrame, chunks: pd.DataFrame) -> dict:
-    """Counts per parent tag, label resolution, text coverage and affected chunks."""
+def condition_stats(
+    xml_dir: Path, fiches: pd.DataFrame, chunks: pd.DataFrame
+) -> tuple[dict, list[str]]:
+    """Counts per parent tag, label resolution and coverage; plus the ids of affected chunks."""
     global_labels = corpus_labels(xml_dir)
-    bodies = chunks.groupby("fiche_id")["body"].apply(list).to_dict()
+    bodies = {
+        fid: list(zip(g["chunk_id"], g["body"], strict=True))
+        for fid, g in chunks.groupby("fiche_id")
+    }
     per_tag: dict[str, Counter] = defaultdict(Counter)
     sheets_per_tag: dict[str, set] = defaultdict(set)
-    affected_chunks: set[tuple[str, int]] = set()
-    resolvable_chunks: set[tuple[str, int]] = set()
-    flag_only_chunks: set[tuple[str, int]] = set()
+    affected_chunks: set[str] = set()
+    resolvable_chunks: set[str] = set()
+    flag_only_chunks: set[str] = set()
     never_negated = never_negated_vars(xml_dir)
     affected_sheets: set[str] = set()
     sheets_with_questionnaire = 0
@@ -103,20 +110,20 @@ def condition_stats(xml_dir: Path, fiches: pd.DataFrame, chunks: pd.DataFrame) -
                 continue
             untitled_vars.update(v for v in variables if v in never_negated)
             long_lines = [line for line in lines if len(line.split()) >= MIN_LINE_WORDS]
-            for i, body in enumerate(sheet_bodies):
+            for chunk_id, body in sheet_bodies:
                 flat = clean(body)
                 if any(line in flat for line in long_lines):
-                    affected_chunks.add((fid, i))
+                    affected_chunks.add(chunk_id)
                     affected_sheets.add(fid)
                     if all(v in global_labels for v in variables):
-                        resolvable_chunks.add((fid, i))
+                        resolvable_chunks.add(chunk_id)
                     if all(v in never_negated for v in variables):
-                        flag_only_chunks.add((fid, i))
+                        flag_only_chunks.add(chunk_id)
     by_tag = {
         tag: {**dict(c), "sheets": len(sheets_per_tag[tag])}
         for tag, c in sorted(per_tag.items(), key=lambda kv: -kv[1]["conditions"])
     }
-    return {
+    stats = {
         "sheets": len(fiches),
         "chunks": len(chunks),
         "sheets_with_questionnaire": int(sheets_with_questionnaire),
@@ -131,14 +138,18 @@ def condition_stats(xml_dir: Path, fiches: pd.DataFrame, chunks: pd.DataFrame) -
         },
         "never_negated_variables_in_untitled": dict(untitled_vars.most_common(5)),
     }
+    return stats, sorted(affected_chunks)
 
 
 def main() -> None:
     xml_dir = latest_snapshot() / "xml"
     fiches = pd.read_parquet(FICHES)
-    chunks = pd.read_parquet(CHUNKS, columns=["fiche_id", "body"])
-    stats = condition_stats(xml_dir, fiches, chunks)
+    chunks = pd.read_parquet(CHUNKS, columns=["chunk_id", "fiche_id", "body"])
+    stats, excluded = condition_stats(xml_dir, fiches, chunks)
     OUTPUT.write_text(json.dumps(stats, indent=2, ensure_ascii=False) + "\n")
+    record = {"reason": "text of an untitled conditioned element", "chunk_ids": excluded}
+    EXCLUDED.write_text(json.dumps(record, indent=1) + "\n")
+    print(f"Wrote {EXCLUDED} ({len(excluded)} chunk ids)")
     print(json.dumps(stats, indent=2, ensure_ascii=False))
 
 
