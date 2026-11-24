@@ -42,3 +42,67 @@ Each entry follows a short ADR format: context, decision, rejected options, rati
 - 36 931 chunks; body length median 109 words, max 250; with header, max 297 words (`results/corpus_stats.json`).
 - The token length of chunks must be checked against the input limit of the embedding model chosen in D3.
 - Near-identical sections exist across situations of a same sheet (for instance public service branches), so several chunks can be relevant to one question.
+
+## D7. Train/test split
+
+- **Date:** 2026-11-24
+- **Status:** accepted, frozen
+
+**Context.** Fine-tuning must never see the text behind a test question. Splitting by sheet is not enough on its own: some chunk bodies appear word for word in several sheets. With a plain random 80/20 split by sheet (seed 42), 609 of the 6 910 test chunks of at least 20 words have a body that also appears in a train sheet (`results/split/split_stats.json`).
+
+**Decision.** Sheets sharing a normalised chunk body of at least 20 words are linked, and each connected group goes entirely to train or to test. Groups are assigned to test theme by theme (majority theme of the group) until each theme reaches 20 % of its sheets. Seed 42. The result is written once to `eval/split.json`; the script refuses to overwrite it with a different split.
+
+**Rejected options.**
+- Random 80/20 by sheet: simplest, but leaks shared text into train, as measured above.
+- Group split at 90/10: more training sheets, but about one candidate question per test sheet, so less diversity in the evaluation set.
+
+**Rationale.** Groups are small (2 485 groups, 2 307 single sheets, largest 25 sheets), so keeping them whole costs little balance. Theme stratification keeps every theme in the test set.
+
+**Consequences.**
+- 585 test sheets (7 645 chunks) and 2 288 train sheets (29 286 chunks). No test chunk of at least 20 words shares its body with train; 19 shorter test chunks do.
+- Because groups are assigned whole, a theme can exceed 20 %: "Étranger - Europe" has 41 test sheets out of 166.
+- The retrieval index stays the full corpus. The split only decides where evaluation questions come from and which sheets fine-tuning may use.
+- PyTest checks that train and test are disjoint, cover the corpus, and share no long chunk body.
+
+## D8. Relevance unit for retrieval metrics
+
+- **Date:** 2026-11-24
+- **Status:** accepted
+
+**Context.** A question is generated from one chunk, but the same text can appear in other chunks: across situations of one sheet (for instance the FPE, FPT and FPH branches of F1690) or across sheets.
+
+**Decision.** Relevance is defined on chunks. The relevant set of a question is its source chunk plus every chunk of the corpus with the same normalised body. It is stored with the question and can be narrowed by hand during review when the question names a specific situation. Sheet-level Recall and MRR are computed from the same labels and reported as secondary metrics.
+
+**Rejected options.**
+- Sheet level only: a sheet holds a median of 9 chunks, so finding the right sheet does not mean finding the passage that answers.
+- Source chunk only: penalises a system that returns an identical copy of the right text.
+
+**Consequences.**
+- Recall@k counts a hit when any relevant chunk is in the top k; MRR uses the rank of the first relevant chunk.
+- The share of questions with more than one relevant chunk is reported with the candidate set.
+
+## D9. LLM for candidate questions
+
+- **Date:** 2026-11-24
+- **Status:** accepted
+
+**Context.** Candidate questions are generated on test sheets only, within a zero budget.
+
+**Decision.** Gemini Flash-Lite through the Google AI Studio free tier, called with the standard library (`urllib`). One call per sampled test sheet: it receives up to 5 chunks with their ids and returns 3 questions, each tied to one chunk. Responses are cached on disk by prompt hash, calls are paced to the rate limit, and HTTP 429 triggers a backoff. Gemini Flash is a fallback for sheets whose questions are poor.
+
+**Rejected options.**
+- Gemini Flash for everything: better French, but a much lower free daily cap, so the run would take several days.
+- Qwen on a Kaggle GPU: no request cap, but weaker at rephrasing and from the same family as the answer generator.
+
+**Consequences.**
+- The judge (D4) is also a Gemini model. It grades answers produced by Qwen, not its own answers, but question style may favour it; this is listed as a limitation.
+- The free tier may use prompts for training; the corpus is public under the Licence Ouverte.
+
+## D10. Config format
+
+- **Date:** 2026-11-24
+- **Status:** accepted
+
+**Decision.** YAML configs read with `yaml.safe_load` (PyYAML). Each experiment copies its config into `results/<name>/`.
+
+**Rejected options.** TOML with the standard `tomllib` (no dependency, but a different format from the rest of the plan); JSON (no comments).
