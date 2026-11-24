@@ -1,9 +1,11 @@
 # Candidate questions generated on test sheets only (eval/split.json).
 name: questions
 seed: 42
-# Check the exact model id and its free-tier limits in the Google AI Studio project.
-model: gemini-flash-lite-latest
-requests_per_minute: 10
+# Exact id from the models.list endpoint (pinned, not a "-latest" alias).
+model: gemini-3.5-flash-lite
+# Free tier shown in AI Studio: 15 RPM, 250K TPM, 500 RPD. 12 RPM leaves a safety margin.
+requests_per_minute: 12
+requests_per_day: 500
 max_calls_per_run: 110
 n_fiches: 110
 chunks_per_fiche: 5

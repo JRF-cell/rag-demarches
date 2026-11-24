@@ -151,6 +151,11 @@ def generation_config(config: dict) -> dict:
     }
 
 
+def call_budget(config: dict) -> int:
+    """Calls allowed in one run: the per-run cap, never above the free-tier daily quota."""
+    return min(config["max_calls_per_run"], config["requests_per_day"])
+
+
 def estimate(plans: list[dict], client: GeminiClient, config: dict) -> dict:
     """Calls still to make and a rough token estimate, before spending any quota."""
     gen = generation_config(config)
@@ -162,10 +167,15 @@ def estimate(plans: list[dict], client: GeminiClient, config: dict) -> dict:
         "prompts": len(plans),
         "cached": len(plans) - len(todo),
         "calls_to_make": len(todo),
-        "calls_this_run": min(len(todo), config["max_calls_per_run"]),
+        "calls_this_run": min(len(todo), call_budget(config)),
+        "requests_per_minute": config["requests_per_minute"],
+        "requests_per_day": config["requests_per_day"],
         "estimated_input_tokens": in_tokens,
         "estimated_output_tokens": out_tokens,
         "estimated_minutes_at_rate_limit": round(len(todo) / config["requests_per_minute"], 1),
+        "estimated_tokens_per_minute": round(
+            (in_tokens + out_tokens) / max(len(todo), 1) * config["requests_per_minute"]
+        ),
     }
 
 
@@ -219,16 +229,17 @@ def build_candidates(
 
 
 def call_missing(plans: list[dict], client: GeminiClient, config: dict) -> None:
-    """Query the API for uncached prompts, up to `max_calls_per_run`, stopping on quota errors."""
+    """Query the API for uncached prompts, up to the call budget, stopping on quota errors."""
     gen = generation_config(config)
     todo = [p for p in plans if not client.is_cached(p["prompt"], gen)]
-    for n, plan in enumerate(todo[: config["max_calls_per_run"]], start=1):
+    budget = call_budget(config)
+    for n, plan in enumerate(todo[:budget], start=1):
         try:
             client.generate(plan["prompt"], gen)
         except QuotaExhausted:
             print(f"Quota reached after {n - 1} new responses; rerun later to resume")
             return
-        print(f"[{n}/{min(len(todo), config['max_calls_per_run'])}] {plan['fiche_id']}")
+        print(f"[{n}/{min(len(todo), budget)}] {plan['fiche_id']}")
 
 
 def main() -> None:
