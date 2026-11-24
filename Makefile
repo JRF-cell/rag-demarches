@@ -11,6 +11,7 @@ install:
 
 data:
 	$(PY) -m src.ingest.download
+	$(PY) -m src.ingest.build_corpus
 
 explore:
 	$(PY) -m src.ingest.explore

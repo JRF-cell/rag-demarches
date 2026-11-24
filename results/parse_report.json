@@ -1,0 +1,16 @@
+{
+  "snapshot": "20261124",
+  "kept_types": [
+    "Fiche d'information conditionnée",
+    "Fiche Question-réponse conditionnée"
+  ],
+  "f_files": 2997,
+  "out_of_scope_by_type": {
+    "Fiche avec liens externes": 15,
+    "Fiche Comment faire si conditionné": 22,
+    "Recherche guidée": 87
+  },
+  "parse_failed_or_empty": [],
+  "fiches_kept": 2873,
+  "sections_kept": 28070
+}
