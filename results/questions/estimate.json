@@ -1,14 +1,14 @@
 {
   "model": "gemini-3.5-flash-lite",
   "prompts": 108,
-  "cached": 0,
-  "calls_to_make": 108,
-  "calls_this_run": 108,
+  "cached": 108,
+  "calls_to_make": 0,
+  "calls_this_run": 0,
   "requests_per_minute": 12,
   "requests_per_day": 500,
-  "estimated_input_tokens": 137688,
-  "estimated_output_tokens": 25920,
-  "estimated_minutes_at_rate_limit": 9.0,
-  "estimated_tokens_per_minute": 18179,
+  "estimated_input_tokens": 0,
+  "estimated_output_tokens": 0,
+  "estimated_minutes_at_rate_limit": 0.0,
+  "estimated_tokens_per_minute": 0,
   "excluded_source_chunks_in_test": 51
 }

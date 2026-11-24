@@ -1,0 +1,37 @@
+{
+  "sheets_planned": 108,
+  "sheets_without_response": 0,
+  "candidates": 320,
+  "dropped_items": {},
+  "multi_relevant": 22,
+  "flag_overlap": 32,
+  "word_overlap": {
+    "n": 320,
+    "sum": 146,
+    "min": 0,
+    "p10": 0.222,
+    "median": 0.455,
+    "mean": 0.5,
+    "p90": 0.6892000000000003,
+    "p99": 0.875,
+    "max": 1
+  },
+  "candidates_by_theme": {
+    "Travail - Formation": 67,
+    "Logement": 54,
+    "Argent - Impôts - Consommation": 48,
+    "Justice": 30,
+    "Étranger - Europe": 27,
+    "Social - Santé": 25,
+    "Famille - Scolarité": 24,
+    "Papiers - Citoyenneté - Élections": 18,
+    "Transports - Mobilité": 12,
+    "Associations, fondations et fonds de dotation": 9,
+    "Loisirs - Sports - Culture": 6
+  },
+  "usage_tokens": {
+    "promptTokenCount": 135476,
+    "candidatesTokenCount": 29419,
+    "totalTokenCount": 164895
+  }
+}
