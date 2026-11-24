@@ -12,6 +12,7 @@ install:
 data:
 	$(PY) -m src.ingest.download
 	$(PY) -m src.ingest.build_corpus
+	$(PY) -m src.ingest.chunk
 
 explore:
 	$(PY) -m src.ingest.explore

@@ -1,0 +1,69 @@
+{
+  "max_words": 250,
+  "fiches": 2873,
+  "sections": 28070,
+  "chunks": 36931,
+  "chunk_body_words": {
+    "n": 36931,
+    "sum": 4721094,
+    "min": 1,
+    "p10": 29.0,
+    "median": 109.0,
+    "mean": 127.8,
+    "p90": 243.0,
+    "p99": 250.0,
+    "max": 250
+  },
+  "chunk_words_with_header": {
+    "n": 36931,
+    "sum": 5516691,
+    "min": 10,
+    "p10": 50.0,
+    "median": 132.0,
+    "mean": 149.4,
+    "p90": 264.0,
+    "p99": 279.0,
+    "max": 297
+  },
+  "chunks_per_fiche": {
+    "n": 2873,
+    "sum": 36931,
+    "min": 1,
+    "p10": 2.0,
+    "median": 9.0,
+    "mean": 12.9,
+    "p90": 26.0,
+    "p99": 66.0,
+    "max": 226
+  },
+  "fiches_by_theme": {
+    "Travail - Formation": 606,
+    "Argent - Impôts - Consommation": 378,
+    "Famille - Scolarité": 363,
+    "Logement": 333,
+    "Social - Santé": 258,
+    "Justice": 222,
+    "Transports - Mobilité": 206,
+    "Papiers - Citoyenneté - Élections": 190,
+    "Étranger - Europe": 166,
+    "Associations, fondations et fonds de dotation": 85,
+    "Loisirs - Sports - Culture": 66
+  },
+  "chunks_by_theme": {
+    "Travail - Formation": 8313,
+    "Logement": 5347,
+    "Argent - Impôts - Consommation": 4260,
+    "Famille - Scolarité": 3947,
+    "Justice": 3156,
+    "Social - Santé": 2826,
+    "Papiers - Citoyenneté - Élections": 2652,
+    "Étranger - Europe": 2564,
+    "Transports - Mobilité": 2217,
+    "Associations, fondations et fonds de dotation": 858,
+    "Loisirs - Sports - Culture": 791
+  },
+  "fiches_by_type": {
+    "Fiche d'information conditionnée": 1497,
+    "Fiche Question-réponse conditionnée": 1376
+  }
+}
