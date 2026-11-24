@@ -106,5 +106,7 @@ class GeminiClient:
                     if err.code == 429:
                         raise QuotaExhausted("rate limit still hit after retries") from err
                     raise
-                self.sleep(self.backoff_seconds * 2**attempt)
+                delay = self.backoff_seconds * 2**attempt
+                print(f"HTTP {err.code}, retrying in {delay:.0f} s", flush=True)
+                self.sleep(delay)
         raise AssertionError("unreachable")

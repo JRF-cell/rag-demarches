@@ -239,7 +239,7 @@ def call_missing(plans: list[dict], client: GeminiClient, config: dict) -> None:
         except QuotaExhausted:
             print(f"Quota reached after {n - 1} new responses; rerun later to resume")
             return
-        print(f"[{n}/{min(len(todo), budget)}] {plan['fiche_id']}")
+        print(f"[{n}/{min(len(todo), budget)}] {plan['fiche_id']}", flush=True)
 
 
 def main() -> None:
