@@ -10,6 +10,7 @@ from src.evaluation.generate_questions import (
     build_candidates,
     parse_questions,
     pick_chunks,
+    plan_prompts,
     relevant_index,
     word_overlap,
 )
@@ -130,3 +131,25 @@ def test_build_candidates_from_cache_only(tmp_path):
     assert stats["sheets_without_response"] == 1
     assert candidates[0]["relevant_chunk_ids"] == ["F1-000", "F2-000"]
     assert candidates[0]["source_chunk_id"] == "F1-000"
+
+
+def test_plan_prompts_never_uses_excluded_chunks_as_sources():
+    chunks = pd.DataFrame(
+        {
+            "chunk_id": ["F1-000", "F1-001", "F2-000"],
+            "fiche_id": ["F1", "F1", "F2"],
+            "body": ["a " * 50, "b " * 50, "c " * 50],
+            "title": ["T1", "T1", "T2"],
+        }
+    )
+    chunks["n_words"] = chunks["body"].str.split().str.len()
+    chunks["text"] = chunks["title"] + "\n" + chunks["body"]
+    config = {
+        **CONFIG,
+        "n_fiches": 2,
+        "chunks_per_fiche": 5,
+        "min_chunk_words": 40,
+    }
+    plans = plan_prompts(chunks, ["F1", "F2"], config, frozenset({"F1-000", "F2-000"}))
+    assert [p["chunk_ids"] for p in plans] == [["F1-001"]]
+    assert "F1-000" not in plans[0]["prompt"]

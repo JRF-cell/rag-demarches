@@ -4,7 +4,8 @@
   "cached": 0,
   "calls_to_make": 108,
   "calls_this_run": 108,
-  "estimated_input_tokens": 137466,
+  "estimated_input_tokens": 137688,
   "estimated_output_tokens": 25920,
-  "estimated_minutes_at_rate_limit": 10.8
+  "estimated_minutes_at_rate_limit": 10.8,
+  "excluded_source_chunks_in_test": 51
 }

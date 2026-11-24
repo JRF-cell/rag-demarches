@@ -25,6 +25,7 @@ from src.ingest.explore import describe
 
 CONFIG = Path("configs/questions.yaml")
 CANDIDATES = Path("eval/questions_candidates.jsonl")
+EXCLUDED = Path("eval/excluded_source_chunks.json")
 CACHE_DIR = Path("cache/llm")
 CHARS_PER_TOKEN = 4  # rough rule of thumb, used for the dry-run estimate only
 OUTPUT_TOKENS_PER_QUESTION = 80
@@ -121,11 +122,16 @@ def relevant_index(chunks: pd.DataFrame) -> dict[str, list[str]]:
     return dict(zip(chunks["chunk_id"], bodies.map(by_body), strict=True))
 
 
-def plan_prompts(chunks: pd.DataFrame, test_ids: list[str], config: dict) -> list[dict]:
-    """One prompt per sampled test sheet that has at least one eligible chunk."""
+def plan_prompts(
+    chunks: pd.DataFrame, test_ids: list[str], config: dict, excluded: frozenset[str] = frozenset()
+) -> list[dict]:
+    """One prompt per sampled test sheet that has at least one eligible, non-excluded chunk."""
     plans = []
-    by_fiche = dict(tuple(chunks.groupby("fiche_id")))
+    sources = chunks[~chunks["chunk_id"].isin(excluded)]
+    by_fiche = dict(tuple(sources.groupby("fiche_id")))
     for i, fid in enumerate(sample_fiches(test_ids, config["n_fiches"], config["seed"])):
+        if fid not in by_fiche:
+            continue
         picked = pick_chunks(
             by_fiche[fid], config["chunks_per_fiche"], config["min_chunk_words"], config["seed"] + i
         )
@@ -234,12 +240,17 @@ def main() -> None:
     load_env()
     chunks = pd.read_parquet(CHUNKS)
     test_ids = json.loads(SPLIT.read_text())["test"]
-    plans = plan_prompts(chunks, test_ids, config)
+    excluded = frozenset(json.loads(EXCLUDED.read_text())["chunk_ids"])
+    plans = plan_prompts(chunks, test_ids, config, excluded)
     api_key = os.environ.get("GEMINI_API_KEY", "")
     client = GeminiClient(config["model"], api_key, CACHE_DIR, config["requests_per_minute"])
     out = results_dir(config, args.config)
 
     est = estimate(plans, client, config)
+    in_test = chunks["fiche_id"].isin(set(test_ids))
+    est["excluded_source_chunks_in_test"] = int(
+        chunks.loc[in_test, "chunk_id"].isin(excluded).sum()
+    )
     (out / "estimate.json").write_text(json.dumps(est, indent=2) + "\n")
     print(json.dumps(est, indent=2))
     if args.call:
