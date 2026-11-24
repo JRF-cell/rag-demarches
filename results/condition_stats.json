@@ -1,0 +1,123 @@
+{
+  "sheets": 2873,
+  "chunks": 36931,
+  "sheets_with_questionnaire": 107,
+  "titled_parents": [
+    "Cas",
+    "Chapitre",
+    "Situation",
+    "SousChapitre"
+  ],
+  "by_parent_tag": {
+    "Cas": {
+      "conditions": 1540,
+      "words": 310457,
+      "resolved_in_sheet": 444,
+      "resolved_in_snapshot": 1031,
+      "words_missing_from_sections": 0,
+      "sheets": 213
+    },
+    "Situation": {
+      "conditions": 598,
+      "words": 875224,
+      "resolved_in_sheet": 206,
+      "resolved_in_snapshot": 459,
+      "words_missing_from_sections": 0,
+      "sheets": 256
+    },
+    "Chapitre": {
+      "conditions": 375,
+      "words": 227921,
+      "resolved_in_sheet": 116,
+      "resolved_in_snapshot": 185,
+      "words_missing_from_sections": 0,
+      "sheets": 74
+    },
+    "FragmentConditionne": {
+      "conditions": 179,
+      "words": 8095,
+      "resolved_in_sheet": 15,
+      "resolved_in_snapshot": 43,
+      "words_missing_from_sections": 0,
+      "sheets": 77
+    },
+    "Introduction": {
+      "conditions": 70,
+      "words": 3385,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 0,
+      "words_missing_from_sections": 0,
+      "sheets": 70
+    },
+    "SousChapitre": {
+      "conditions": 63,
+      "words": 18247,
+      "resolved_in_sheet": 19,
+      "resolved_in_snapshot": 29,
+      "words_missing_from_sections": 0,
+      "sheets": 22
+    },
+    "Item": {
+      "conditions": 33,
+      "words": 918,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 6,
+      "words_missing_from_sections": 0,
+      "sheets": 7
+    },
+    "Reference": {
+      "conditions": 32,
+      "words": 52,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 18,
+      "words_missing_from_sections": 44,
+      "sheets": 13
+    },
+    "ServiceEnLigne": {
+      "conditions": 26,
+      "words": 23,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 23,
+      "words_missing_from_sections": 23,
+      "sheets": 12
+    },
+    "PourEnSavoirPlus": {
+      "conditions": 6,
+      "words": 0,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 6,
+      "words_missing_from_sections": 0,
+      "sheets": 6
+    },
+    "Fiche": {
+      "conditions": 3,
+      "words": 0,
+      "resolved_in_sheet": 0,
+      "resolved_in_snapshot": 0,
+      "words_missing_from_sections": 0,
+      "sheets": 2
+    },
+    "Conclusion": {
+      "conditions": 1,
+      "words": 0,
+      "resolved_in_sheet": 1,
+      "resolved_in_snapshot": 1,
+      "words_missing_from_sections": 0,
+      "sheets": 1
+    }
+  },
+  "untitled_conditioned": {
+    "min_line_words_for_matching": 5,
+    "chunks": 266,
+    "sheets": 133,
+    "chunks_with_resolvable_condition": 35,
+    "chunks_with_never_negated_condition_only": 160
+  },
+  "never_negated_variables_in_untitled": {
+    "T10010": 132,
+    "T11770": 14,
+    "T11713": 6,
+    "T10015": 3,
+    "T14702": 2
+  }
+}
