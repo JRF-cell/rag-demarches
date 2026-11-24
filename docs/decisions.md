@@ -106,3 +106,21 @@ Each entry follows a short ADR format: context, decision, rejected options, rati
 **Decision.** YAML configs read with `yaml.safe_load` (PyYAML). Each experiment copies its config into `results/<name>/`.
 
 **Rejected options.** TOML with the standard `tomllib` (no dependency, but a different format from the rest of the plan); JSON (no comments).
+
+## D11. Conditional content
+
+- **Date:** 2026-11-24
+- **Status:** accepted
+
+**Context.** A `<Condition>` holds no text: it references questionnaire variables (`<estVrai var="T..."/>`), whose labels only exist in the `<Questionnaire>` of 107 of the 2 873 sheets. The parser skips both, so a conditioned element keeps its text but loses the condition under which it applies (`results/condition_stats.json`). No body text is lost: 0 missing words in conditioned sections, apart from 67 words of links and online services that sit in skipped blocks. 2 576 conditions sit on titled elements (`Cas`, `Situation`, `Chapitre`, `SousChapitre`), whose title is kept and states the case. 282 sit on untitled elements (`FragmentConditionne`, `Introduction`, `Item`); their text appears in 266 chunks of 133 sheets. Only 35 of these chunks have a condition whose label exists anywhere in the snapshot, and 160 depend only on variables that are never negated nor assigned by any questionnaire (mostly `T10010`).
+
+**Decision.** Chunking is unchanged. The 266 chunks are listed in `eval/excluded_source_chunks.json`; they stay in the retrieval index but are never used as the source of an evaluation question.
+
+**Rejected options.**
+- Prefix lines with the questionnaire label ("question? choice") where it exists: changes 35 chunks only, with labels that are often bare "Oui"/"Non", and requires rebuilding the chunks and the frozen split.
+- A generic prefix such as "(selon votre situation)" on all 266 chunks: adds words with no information for BM25 and the embedding model, also requires rebuilding the split.
+
+**Consequences.**
+- The split of D7 is untouched.
+- 51 of the excluded chunks belong to test sheets (`results/questions/estimate.json`).
+- A retrieved chunk can still carry a condition-dependent statement without its condition; this is listed as a limitation of the answers.
