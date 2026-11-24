@@ -226,3 +226,6 @@ __marimo__/
 data/raw/
 data/processed/
 models/
+
+# LLM response cache
+cache/
