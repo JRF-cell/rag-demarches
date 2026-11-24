@@ -13,6 +13,7 @@ from src.evaluation.review import (
 CANDIDATE = {
     "id": "F1-q0",
     "question": "Q ?",
+    "answer": "A.",
     "relevant_chunk_ids": ["F1-000", "F2-000", "F3-000"],
     "flag_overlap": True,
 }
@@ -25,13 +26,28 @@ def scripted(*answers: str):
 
 def test_ask_accept_edit_narrow_and_reject():
     assert ask(CANDIDATE, scripted("a"))["status"] == "accepted"
-    edited = ask(CANDIDATE, scripted("e", "Nouvelle question ?"))
+    edited = ask(CANDIDATE, scripted("e", "Nouvelle question ?", "a"))
     assert (edited["status"], edited["question"]) == ("edited", "Nouvelle question ?")
-    narrowed = ask(CANDIDATE, scripted("k", "0, 2"))
+    assert edited["answer"] == "A."
+    narrowed = ask(CANDIDATE, scripted("k", "0, 2", "a"))
     assert narrowed["relevant_chunk_ids"] == ["F1-000", "F3-000"]
     rejected = ask(CANDIDATE, scripted("x", "r", "c"))
     assert (rejected["status"], rejected["reason"]) == ("rejected", "copied_wording")
     assert ask(CANDIDATE, scripted("s")) is None
+
+
+def test_ask_edit_answer_accumulates_with_other_edits():
+    record = ask(CANDIDATE, scripted("n", "Réponse corrigée.", "e", "Q2 ?", "a"))
+    assert record["status"] == "edited"
+    assert (record["question"], record["answer"]) == ("Q2 ?", "Réponse corrigée.")
+    assert record["edits"] == ["answer", "question"]
+    assert record["relevant_chunk_ids"] == CANDIDATE["relevant_chunk_ids"]
+    assert ask(CANDIDATE, scripted("n", "discarded", "s")) is None
+
+
+def test_edited_fields_are_counted():
+    decisions = latest_decisions([make_decision(CANDIDATE, "edited", answer="x", edits=["answer"])])
+    assert review_stats([CANDIDATE], decisions)["human_review"]["edited_fields"] == {"answer": 1}
 
 
 def test_latest_decision_wins_and_stats_count_it():

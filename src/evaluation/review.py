@@ -37,7 +37,10 @@ REJECT_REASONS = {
     "d": "duplicate",
     "o": "other",
 }
-HELP = "[a] accept  [e] edit question  [k] narrow relevant chunks  [r] reject  [s] skip  [q] quit"
+HELP = (
+    "[a] accept/save  [e] edit question  [n] edit answer  [k] narrow relevant chunks  "
+    "[r] reject  [s] skip  [q] quit"
+)
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -57,13 +60,21 @@ def make_decision(
     question: str | None = None,
     relevant: list[str] | None = None,
     reason: str | None = None,
+    answer: str | None = None,
+    edits: list[str] | None = None,
 ) -> dict:
-    """One review record: 'accepted', 'edited' or 'rejected' by hand, or 'auto_accepted'."""
+    """One review record: 'accepted', 'edited' or 'rejected' by hand, or 'auto_accepted'.
+
+    The record carries the final question, reference answer and relevant chunks, so that the
+    validated set can be built from the decisions alone; `edits` names the corrected fields.
+    """
     return {
         "id": candidate["id"],
         "status": status,
         "question": question or candidate["question"],
+        "answer": answer or candidate.get("answer", ""),
         "relevant_chunk_ids": relevant or candidate["relevant_chunk_ids"],
+        "edits": edits or [],
         "reason": reason,
         "date": date.today().isoformat(),
     }
@@ -95,6 +106,7 @@ def human_counts(decisions: list[dict], flagged: set[str]) -> dict:
         "by_status": dict(status),
         "rejection_rate": round(status["rejected"] / len(decisions), 3) if decisions else None,
         "reject_reasons": dict(Counter(d["reason"] for d in decisions if d["reason"])),
+        "edited_fields": dict(Counter(f for d in decisions for f in d.get("edits", []))),
         "overlap_flagged_reviewed": sum(d["id"] in flagged for d in decisions),
         "rejected_among_overlap_flagged": sum(
             d["status"] == "rejected" for d in decisions if d["id"] in flagged
@@ -155,21 +167,32 @@ def show(candidate: dict, chunks: pd.DataFrame, done: int, total: int) -> None:
 
 
 def ask(candidate: dict, read: Callable[[str], str]) -> dict | None:
-    """Prompt for one decision; return None to skip, raise StopIteration to quit."""
+    """Prompt for one decision; return None to skip, raise StopIteration to quit.
+
+    Edits (question, answer, relevant chunks) accumulate until [a] saves them as one 'edited'
+    record; [s] and [q] discard unsaved edits.
+    """
+    changes: dict[str, object] = {}
     while True:
         cmd = read(f"{HELP}\n> ").strip().lower()
         if cmd == "a":
-            return make_decision(candidate, "accepted")
+            if not changes:
+                return make_decision(candidate, "accepted")
+            return make_decision(candidate, "edited", edits=sorted(changes), **changes)
         if cmd == "e":
             new = read("New question: ").strip()
             if new:
-                return make_decision(candidate, "edited", question=new)
+                changes["question"] = new
+        elif cmd == "n":
+            new = read("New answer: ").strip()
+            if new:
+                changes["answer"] = new
         elif cmd == "k":
             picks = read("Indices to keep (e.g. 0,2): ").replace(" ", "").split(",")
             ids = candidate["relevant_chunk_ids"]
             keep = [ids[int(i)] for i in picks if i.isdigit() and int(i) < len(ids)]
             if keep:
-                return make_decision(candidate, "edited", relevant=keep)
+                changes["relevant"] = keep
         elif cmd == "r":
             codes = " ".join(f"[{k}] {v}" for k, v in REJECT_REASONS.items())
             code = read(f"{codes}\n> ").strip().lower()
@@ -179,6 +202,8 @@ def ask(candidate: dict, read: Callable[[str], str]) -> dict | None:
             return None
         elif cmd == "q":
             raise StopIteration
+        if changes and cmd in ("e", "n", "k"):
+            print(f"Pending edits: {', '.join(sorted(changes))}. Press [a] to save.")
 
 
 def append_decisions(decisions: list[dict], path: Path = DECISIONS) -> None:
