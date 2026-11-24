@@ -1,0 +1,87 @@
+{
+  "fiches": {
+    "test": 585,
+    "train": 2288
+  },
+  "chunks": {
+    "test": 7645,
+    "train": 29286
+  },
+  "groups": 2485,
+  "single_sheet_groups": 2307,
+  "largest_groups": [
+    25,
+    20,
+    18,
+    18,
+    15,
+    15,
+    11,
+    11,
+    9,
+    7
+  ],
+  "test_fiches_by_theme": {
+    "Argent - Impôts - Consommation": {
+      "test": 76,
+      "total": 378
+    },
+    "Associations, fondations et fonds de dotation": {
+      "test": 18,
+      "total": 85
+    },
+    "Famille - Scolarité": {
+      "test": 73,
+      "total": 363
+    },
+    "Justice": {
+      "test": 45,
+      "total": 222
+    },
+    "Logement": {
+      "test": 67,
+      "total": 333
+    },
+    "Loisirs - Sports - Culture": {
+      "test": 13,
+      "total": 66
+    },
+    "Papiers - Citoyenneté - Élections": {
+      "test": 38,
+      "total": 190
+    },
+    "Social - Santé": {
+      "test": 52,
+      "total": 258
+    },
+    "Transports - Mobilité": {
+      "test": 41,
+      "total": 206
+    },
+    "Travail - Formation": {
+      "test": 121,
+      "total": 606
+    },
+    "Étranger - Europe": {
+      "test": 41,
+      "total": 166
+    }
+  },
+  "test_fiches_by_type": {
+    "Fiche Question-réponse conditionnée": 292,
+    "Fiche d'information conditionnée": 293
+  },
+  "leak_min_words": 20,
+  "leak_group_split": {
+    "test_chunks": 7277,
+    "leaked": 0
+  },
+  "leak_group_split_all_lengths": {
+    "test_chunks": 7645,
+    "leaked": 19
+  },
+  "leak_random_split_baseline": {
+    "test_chunks": 6910,
+    "leaked": 609
+  }
+}

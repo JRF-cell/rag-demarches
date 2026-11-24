@@ -1,0 +1,6 @@
+# Train/test split of the sheets. Frozen once eval/split.json is written.
+name: split
+seed: 42
+test_fraction: 0.2
+# Two sheets sharing a chunk body of at least this many words go to the same side.
+link_min_words: 20
