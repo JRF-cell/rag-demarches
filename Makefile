@@ -2,7 +2,7 @@ PYTHON ?= python3.11
 VENV := .venv
 PY := $(VENV)/bin/python
 
-.PHONY: install data explore split questions questions-dry review test lint format eval api
+.PHONY: install data explore split questions questions-dry review review-sample test lint format eval api
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -28,6 +28,9 @@ questions:
 
 review:
 	$(PY) -m src.evaluation.review
+
+review-sample:
+	$(PY) -m src.evaluation.review --sample 80 --seed 42
 
 test:
 	$(PY) -m pytest
