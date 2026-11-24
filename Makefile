@@ -20,6 +20,15 @@ explore:
 split:
 	$(PY) -m src.evaluation.split
 
+questions-dry:
+	$(PY) -m src.evaluation.generate_questions
+
+questions:
+	$(PY) -m src.evaluation.generate_questions --call
+
+review:
+	$(PY) -m src.evaluation.review
+
 test:
 	$(PY) -m pytest
 

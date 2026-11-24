@@ -1,0 +1,10 @@
+{
+  "model": "gemini-flash-lite-latest",
+  "prompts": 108,
+  "cached": 0,
+  "calls_to_make": 108,
+  "calls_this_run": 108,
+  "estimated_input_tokens": 137466,
+  "estimated_output_tokens": 25920,
+  "estimated_minutes_at_rate_limit": 10.8
+}
